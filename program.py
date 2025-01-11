@@ -56,34 +56,16 @@ def start_detection():
             image.flags.writeable = True
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-            
-            #  # 1. Draw face landmarks
-            # mp_drawing.draw_landmarks(image, results.face_landmarks, mp_holistic.FACEMESH_TESSELATION, 
-            #                          mp_drawing.DrawingSpec(color=(80,110,10), thickness=1, circle_radius=1),
-            #                          mp_drawing.DrawingSpec(color=(80,256,121), thickness=1, circle_radius=1)
-            #                          )
-            
-            # 2. Right hand
+            # Draw landmarks
             mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS, 
-                                     mp_drawing.DrawingSpec(color=(80,22,10), thickness=2, circle_radius=4),
-                                     mp_drawing.DrawingSpec(color=(80,44,121), thickness=2, circle_radius=2)
-                                     )
-    
-            # 3. Left Hand
+                                      mp_drawing.DrawingSpec(color=(80,22,10), thickness=2, circle_radius=4),
+                                      mp_drawing.DrawingSpec(color=(80,44,121), thickness=2, circle_radius=2))
             mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS, 
-                                     mp_drawing.DrawingSpec(color=(121,22,76), thickness=2, circle_radius=4),
-                                     mp_drawing.DrawingSpec(color=(121,44,250), thickness=2, circle_radius=2)
-                                     )
-    
-            # 4. Pose Detections
+                                      mp_drawing.DrawingSpec(color=(121,22,76), thickness=2, circle_radius=4),
+                                      mp_drawing.DrawingSpec(color=(121,44,250), thickness=2, circle_radius=2))
             mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS, 
-                                     mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=4),
-                                     mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2))
-            # # Draw landmarks
-            # mp_drawing.draw_landmarks(image, results.face_landmarks, mp_holistic.FACEMESH_TESSELATION)
-            # mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
-            # mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
-            # mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
+                                      mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=4),
+                                      mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2))
 
             # Preprocess the frame for prediction
             prediction_image = cv2.resize(frame, (150, 150))
@@ -125,8 +107,10 @@ def start_detection():
 label = tk.Label(right_frame, text="Select Action to Detect:")
 label.pack(pady=5)
 
-dropdown = ttk.Combobox(right_frame, textvariable=selected_action, values=["sit", "stand", "jump", "run", "situp", "walk"])
-dropdown.pack(pady=5)
+# Use radio buttons for action selection
+actions = ["sit", "stand", "jump", "run", "situp", "walk"]
+for action in actions:
+    tk.Radiobutton(right_frame, text=action.capitalize(), variable=selected_action, value=action, indicator= 0 , background="light blue", width=30).pack(anchor=tk.W, pady=2)
 
 start_button = tk.Button(right_frame, text="Start Detection", command=start_detection)
 start_button.pack(pady=10)
