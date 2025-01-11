@@ -3,7 +3,7 @@ import numpy as np
 from tensorflow.keras.models import load_model
 import mediapipe as mp
 import tkinter as tk
-from tkinter import StringVar, ttk
+from tkinter import StringVar
 from PIL import Image, ImageTk
 
 # Load the trained image classification model and class labels
@@ -18,6 +18,7 @@ mp_drawing = mp.solutions.drawing_utils
 root = tk.Tk()
 root.title("Action Detection Selector")
 root.geometry("800x500")  # Adjusted size for both frames
+root.resizable(False, False)  # Prevent window from being resized
 
 # Container frames for layout
 left_frame = tk.Frame(root, width=700, height=700, bg='white')  # Larger frame for video
@@ -76,11 +77,17 @@ def start_detection():
             prediction = model.predict(prediction_image, verbose=0)
             predicted_label = class_labels[np.argmax(prediction)]
 
-            # Display the selected action only if it matches
-            if predicted_label == selected_action.get():
-                display_text = f"Action Detected: {predicted_label}"
+            # Display the selected action or "all actions" detection
+            if selected_action.get() == "all":
+                # Show all actions that match the prediction
+                matched_actions = [class_labels[i] for i in range(len(prediction[0])) if prediction[0][i] > 0.5]
+                display_text = f"Actions Detected: {', '.join(matched_actions)}" if matched_actions else "No action detected"
             else:
-                display_text = "No matching action detected"
+                # Show only the selected action if it matches
+                if predicted_label == selected_action.get():
+                    display_text = f"Action Detected: {predicted_label}"
+                else:
+                    display_text = "No matching action detected"
 
             # Display the prediction
             cv2.putText(image, display_text, (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
@@ -108,15 +115,19 @@ label = tk.Label(right_frame, text="Select Action to Detect:")
 label.pack(pady=5)
 
 # Use radio buttons for action selection
-actions = ["sit", "stand", "jump", "run", "situp", "walk"]
+actions = ["sit", "stand", "jump", "run", "situp", "walk", "all"]
 for action in actions:
-    tk.Radiobutton(right_frame, text=action.capitalize(), variable=selected_action, value=action, indicator= 0 , background="light blue", width=30).pack(anchor=tk.W, pady=2)
+    tk.Radiobutton(right_frame, 
+                   text=action.capitalize(), 
+                   variable=selected_action, 
+                   value=action, indicator= 0 , 
+                   background="light blue", 
+                   width=30,
+                   height=2, 
+                   font=("Impact",13),
+                   command=start_detection).pack(anchor=tk.W, pady=2)
 
-start_button = tk.Button(right_frame, text="Start Detection", command=start_detection)
-start_button.pack(pady=10)
-
-exit_button = tk.Button(right_frame, text="Exit", command=root.destroy)
-exit_button.pack(pady=5)
-
+# Automatically start detection with the default selected action
+start_detection()
 # Run the GUI event loop
 root.mainloop()
