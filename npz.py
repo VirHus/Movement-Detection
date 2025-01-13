@@ -1,55 +1,71 @@
 import os
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.utils import to_categorical
-import cv2
-import mediapipe as mp
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.optimizers import Adam
 
-# Define paths
-data_dir = "C:/VSCODE/Models/HMDB51"  # Change to your dataset root folder
+# Define paths and hyperparameters
+data_dir = "HMDB51"  # Change to your dataset root folder
 image_size = (150, 150)  # Resize all images to this size
 batch_size = 32
+epochs = 10  # Number of training epochs
 
-# Load image dataset using ImageDataGenerator
-datagen = ImageDataGenerator(rescale=1.0/255, validation_split=0.2)
+# Data Augmentation for better generalization
+datagen = ImageDataGenerator(
+    rescale=1.0/255,  # Normalize pixel values to [0, 1]
+    validation_split=0.2,  # Split the data into training and validation sets
+    rotation_range=40,  # Randomly rotate images
+    width_shift_range=0.2,  # Randomly shift images horizontally
+    height_shift_range=0.2,  # Randomly shift images vertically
+    shear_range=0.2,  # Apply shear transformations
+    zoom_range=0.2,  # Apply random zoom
+    horizontal_flip=True,  # Randomly flip images horizontally
+    fill_mode='nearest'  # Fill missing pixels after transformations
+)
+
+# Create training and validation data generators
 train_data = datagen.flow_from_directory(
     data_dir,
     target_size=image_size,
     batch_size=batch_size,
     class_mode='categorical',
-    subset='training'
+    subset='training'  # Set this as training data
 )
+
 val_data = datagen.flow_from_directory(
     data_dir,
     target_size=image_size,
     batch_size=batch_size,
     class_mode='categorical',
-    subset='validation'
+    subset='validation'  # Set this as validation data
 )
 
-# Define a new model based on image input
+# Build the model using Transfer Learning with VGG16
+base_model = VGG16(weights='imagenet', include_top=False, input_shape=(image_size[0], image_size[1], 3))
+base_model.trainable = False  # Freeze the VGG16 convolutional base layers
+
+# Define the custom classification head on top of the VGG16 base model
 model = Sequential([
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(image_size[0], image_size[1], 3)),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dropout(0.5),
-    tf.keras.layers.Dense(len(train_data.class_indices), activation='softmax')
+    base_model,  # Pre-trained VGG16 layers (frozen)
+    Flatten(),  # Flatten the 3D outputs from the convolutional base to 1D
+    Dense(128, activation='relu'),  # Fully connected layer with ReLU activation
+    Dropout(0.5),  # Dropout regularization to prevent overfitting
+    Dense(len(train_data.class_indices), activation='softmax')  # Output layer for multi-class classification
 ])
 
-# Compile and train the model
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-history = model.fit(train_data, validation_data=val_data, epochs=10)
+# Compile the model with Adam optimizer and categorical cross-entropy loss
+model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
 
-# Save the model and class labels
-model.save("HMDB51.keras")
-np.save('classes.npy', list(train_data.class_indices.keys()))
+# Train the model
+history = model.fit(
+    train_data,  # Training data
+    validation_data=val_data,  # Validation data
+    epochs=epochs,  # Number of epochs
+)
 
-# For real-time predictions, use Mediapipe landmarks or direct image classification based on your needs.
+# Save the trained model and class labels for future use
+model.save("HMDB51_with_vgg16_trained_model.h5")
+np.save('classes.npy', list(train_data.class_indices.keys()))  # Save class labels

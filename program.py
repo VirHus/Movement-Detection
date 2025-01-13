@@ -3,11 +3,12 @@ import numpy as np
 from tensorflow.keras.models import load_model
 import mediapipe as mp
 import tkinter as tk
-from tkinter import StringVar
+from tkinter import StringVar, messagebox
+from sklearn.metrics import confusion_matrix, classification_report
 from PIL import Image, ImageTk
 
 # Load the trained image classification model and class labels
-model = load_model("HMDB51.keras")
+model = load_model("HMDB51_with_vgg16_trained_model.h5")
 class_labels = np.load('classes.npy')
 
 # Initialize Mediapipe for pose and hand landmarks
@@ -17,7 +18,7 @@ mp_drawing = mp.solutions.drawing_utils
 # Initialize GUI for action selection
 root = tk.Tk()
 root.title("Action Detection Selector")
-root.geometry("800x500")  # Adjusted size for both frames
+root.geometry("800x600")  # Adjusted size for both frames
 root.resizable(False, False)  # Prevent window from being resized
 
 # Container frames for layout
@@ -37,6 +38,22 @@ selected_action.set("sit")  # Default action
 # Canvas for real-time action detection
 canvas = tk.Canvas(left_frame, width=640, height=480)
 canvas.pack()
+
+# For performance evaluation
+def evaluate_model():
+    # Here we simulate evaluation by using a test dataset, modify this with your dataset.
+    # This could be an actual dataset or hardcoded labels for demonstration purposes.
+    y_true = ['sit', 'stand', 'jump', 'run', 'situp']  # Example ground truth labels
+    y_pred = ['sit', 'run', 'jump', 'run', 'walk']  # Example predicted labels (modify as necessary)
+
+    # Generate confusion matrix
+    cm = confusion_matrix(y_true, y_pred, labels=class_labels)
+    
+    # Generate classification report
+    report = classification_report(y_true, y_pred, labels=class_labels)
+
+    # Show evaluation metrics in a pop-up window
+    messagebox.showinfo("Model Evaluation", f"Confusion Matrix:\n{cm}\n\nClassification Report:\n{report}")
 
 # Function to start real-time detection based on selected action
 def start_detection():
@@ -127,7 +144,12 @@ for action in actions:
                    font=("Impact",13),
                    command=start_detection).pack(anchor=tk.W, pady=2)
 
+# Button to evaluate model
+eval_button = tk.Button(right_frame, text="Evaluate Model", command=evaluate_model, font=("Impact", 13), width=30, height=2)
+eval_button.pack(pady=10)
+
 # Automatically start detection with the default selected action
 start_detection()
+
 # Run the GUI event loop
 root.mainloop()
