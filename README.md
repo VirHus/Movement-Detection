@@ -5,6 +5,7 @@
   for various applications in fitness, rehabilitation, and interactive systems.
 
 ## Get started
+  -  Run the train_model.py file to train dataset into model.
   -  Run the program.py file to launch the action detection system.
   -  Ensure the camera is positioned to clearly capture your movements when the window feed opens.
   -  Use the buttons on the right panel to select the action you want to detect: Sit, Stand, Walk, Jump, Run, or All Actions.
