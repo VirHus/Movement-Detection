@@ -43,8 +43,8 @@ canvas.pack()
 def evaluate_model():
     # Here we simulate evaluation by using a test dataset, modify this with your dataset.
     # This could be an actual dataset or hardcoded labels for demonstration purposes.
-    y_true = ['sit', 'stand', 'jump', 'run', 'situp']  # Example ground truth labels
-    y_pred = ['sit', 'run', 'jump', 'run', 'walk']  # Example predicted labels (modify as necessary)
+    y_true = ['sit', 'stand', 'jump', 'run', 'situp']
+    y_pred = ['sit', 'run', 'jump', 'run', 'walk']
 
     # Generate confusion matrix
     cm = confusion_matrix(y_true, y_pred, labels=class_labels)
@@ -132,7 +132,7 @@ label = tk.Label(right_frame, text="Select Action to Detect:")
 label.pack(pady=5)
 
 # Use radio buttons for action selection
-actions = ["sit", "stand", "jump", "run", "situp", "walk", "all"]
+actions = ["sit", "stand", "jump", "run", "walk", "all"]
 for action in actions:
     tk.Radiobutton(right_frame, 
                    text=action.capitalize(), 
