@@ -13,7 +13,8 @@
 
 # Samples
 
-  ![image](https://github.com/user-attachments/assets/607f5cc5-180c-44f8-8eeb-1dcd24254fb4)
+ ![Sample Image](SampleImages/image.png)
+
   
   ![image](https://github.com/user-attachments/assets/7cea3a7d-0f73-49f8-8ed9-1371ebf8ea6a)
   
